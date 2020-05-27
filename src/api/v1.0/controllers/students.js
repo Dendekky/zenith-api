@@ -139,7 +139,6 @@ const updateStudent = [
   },
 ];
 
-
 const deleteStudent = (req, res) => BlogDraft.findByIdAndRemove(req.params.id, (err, del) => {
   if (err) {
     res.status(500).send({
