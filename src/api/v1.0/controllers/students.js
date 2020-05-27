@@ -4,7 +4,7 @@ import  parseImage from '../config/multerconfig';
 import { uploadImage } from '../config/cloudinaryconfig';
 
 
-const createDraft = (req, res) => {
+const createStudent = (req, res) => {
   // console.log(req.body);
 
   parseImage(req, res, function(err) {
@@ -44,7 +44,7 @@ const createDraft = (req, res) => {
   })
 };
 
-// const createDraft = [
+// const createStudent = [
 //   check('title').isLength({ min: 3 }).withMessage('Please input a title'),
 //   body('category').isLength({ min: 3 }).withMessage('input category'),
 //   check('body').isLength({ min: 3 }).withMessage('Please input the blog'),
@@ -83,7 +83,7 @@ const createDraft = (req, res) => {
 //   },
 // ];
 
-const getAllDrafts = (req, res) => BlogDraft.find({}, (err, drafts) => {
+const getAllStudents = (req, res) => BlogDraft.find({}, (err, drafts) => {
   if (err) {
     res.status(500).send({
       status: 500,
@@ -97,7 +97,7 @@ const getAllDrafts = (req, res) => BlogDraft.find({}, (err, drafts) => {
 });
 
 
-const getDraft = (req, res) => BlogDraft.findById(req.params.id, (err, draft) => {
+const getStudent = (req, res) => BlogDraft.findById(req.params.id, (err, draft) => {
   if (err) {
     res.status(500).send({
       message: 'Internal server error',
@@ -109,7 +109,7 @@ const getDraft = (req, res) => BlogDraft.findById(req.params.id, (err, draft) =>
 });
 
 
-const updateDraft = [
+const updateStudent = [
   check('title').isLength({ min: 3 }).withMessage('Please input a title'),
   body('category').isLength({ min: 3 }).withMessage('input category'),
   check('body').isLength({ min: 3 }).withMessage('Please input the blog'),
@@ -140,7 +140,7 @@ const updateDraft = [
 ];
 
 
-const deleteDraft = (req, res) => BlogDraft.findByIdAndRemove(req.params.id, (err, del) => {
+const deleteStudent = (req, res) => BlogDraft.findByIdAndRemove(req.params.id, (err, del) => {
   if (err) {
     res.status(500).send({
       message: 'Internal server error',
@@ -153,9 +153,9 @@ const deleteDraft = (req, res) => BlogDraft.findByIdAndRemove(req.params.id, (er
 
 
 module.exports = {
-  createDraft,
-  getAllDrafts,
-  getDraft,
-  updateDraft,
-  deleteDraft
+  createStudent,
+  getAllStudents,
+  getStudent,
+  updateStudent,
+  deleteStudent
 };

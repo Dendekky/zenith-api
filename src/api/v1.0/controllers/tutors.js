@@ -4,7 +4,7 @@ import PostComment from '../models/comments';
 import  parseImage from '../config/multerconfig';
 import { uploadImage } from '../config/cloudinaryconfig';
 
-exports.createPost = (req, res) => {
+exports.createTutor = (req, res) => {
 
   parseImage(req, res, function(err) {
     const { title, category, body } = req.body;
@@ -42,7 +42,7 @@ exports.createPost = (req, res) => {
   })
 };
 
-exports.getAllPosts = (req, res) => BlogPost.find({}, (err, posts) => {
+exports.getAllTutors = (req, res) => BlogPost.find({}, (err, posts) => {
   if (err) {
     res.status(500).send({
       status: 500,
@@ -55,7 +55,7 @@ exports.getAllPosts = (req, res) => BlogPost.find({}, (err, posts) => {
   });
 });
 
-exports.getPost = (req, res) => BlogPost.findOne({ _id: req.params.id })
+exports.getTutor = (req, res) => BlogPost.findOne({ _id: req.params.id })
   .populate("comments")
   .then((post) => {
     if (!post) {
@@ -69,7 +69,7 @@ exports.getPost = (req, res) => BlogPost.findOne({ _id: req.params.id })
     res.json(err);
   });
 
-exports.updatePost = [
+exports.updateTutor = [
   check('title').isLength({ min: 3 }).withMessage('Please input a title'),
   body('category').isLength({ min: 3 }).withMessage('input category'),
   check('body').isLength({ min: 3 }).withMessage('Please input the blog'),
@@ -99,7 +99,7 @@ exports.updatePost = [
   },
 ];
 
-exports.deletePost = (req, res) => BlogPost.findByIdAndRemove(req.params.id, (err, del) => {
+exports.deleteTutor = (req, res) => BlogPost.findByIdAndRemove(req.params.id, (err, del) => {
   if (err) {
     res.status(500).send({
       message: 'Internal server error',
@@ -109,23 +109,4 @@ exports.deletePost = (req, res) => BlogPost.findByIdAndRemove(req.params.id, (er
     message: 'post deleted',
   });
 });
-
-exports.createComment = (req, res) => {
-  const { name, message, post } = req.body;
-  PostComment.create({name, message, post })
-  .then((comment) => 
-   BlogPost.findOneAndUpdate({ _id: post }, {$push: {comments: comment._id}}, { new: true })
-  )
-  .then((blogpost) => {
-    if (!blogpost) {
-     return res.status(500).send({
-        message: 'Internal server error',
-      });
-    }
-    return res.json(blogpost)
-  })
-  .catch(function(err) {
-    res.json(err);
-  });
-}
 
