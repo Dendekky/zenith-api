@@ -1,9 +1,9 @@
 /* eslint-disable linebreak-style */
 import {
-  createTutor, getTutor, getAllTutors, updateTutor, deleteTutor,
+  createTutor, tutorLogin, getTutor, getAllTutors, updateTutor, deleteTutor,
 } from '../controllers/tutors';
 import {
-  createStudent, getStudent, getAllStudents, updateStudent, deleteStudent,
+  createStudent, studentLogin, getStudent, getAllStudents, updateStudent, deleteStudent,
 } from '../controllers/students';
 import { login } from '../controllers/admin';
 import { checkAuth } from '../middlewares/auth';
@@ -17,6 +17,7 @@ module.exports = (app) => {
   // app.post('/api/register', authController.register);
   // app.get('/api/users', authController.userList);
   app.post('/api/student', createStudent);
+  app.post('/api/student/login', studentLogin);
   app.get('/api/student', getAllStudents);
   app.get('/api/student/:id', getStudent);
   app.put('/api/student/:id', updateStudent);
@@ -24,6 +25,7 @@ module.exports = (app) => {
 
   app.get('/api/tutor', getAllTutors);
   app.post('/api/tutor', createTutor);
+  app.post('/api/tutor/login', tutorLogin);
   app.get('/api/tutor/:id', getTutor);
   app.put('/api/tutor/:id', updateTutor);
   app.delete('/api/tutor/:id', checkAuth, deleteTutor);

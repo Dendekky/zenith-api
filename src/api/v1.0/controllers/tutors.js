@@ -49,6 +49,48 @@ exports.createTutor = [
   },
 ];
 
+exports.tutorLogin = [
+  body('email')
+    .isEmail()
+    .withMessage('Type in an actual email')
+    .normalizeEmail(),
+  check('password')
+    .isLength({ min: 4 })
+    .withMessage('must be at least 4 characters long'),
+  async (req, res) => {
+    const errors = await validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(406).send({
+        errors: errors.array(),
+      });
+    } else {
+      try {
+        const { email, password } = req.body;
+        const tutor = await Tutors.findByCredentials(email, password);
+        if (!tutor) {
+          return res
+            .status(401)
+            .send({ error: 'Login failed! Incorrect email' });
+        }
+        if (!tutor.password) {
+          return res
+            .status(401)
+            .send({ error: 'Login failed! Incorrect password' });
+        }
+        // if (!tutor.isVerified) {
+        //   return res
+        //     .status(401)
+        //     .send({ error: 'Your account has not been verified.' });
+        // }
+        const token = await tutor.generateAuthToken();
+        res.status(200).send({ tutor, token });
+      } catch (error) {
+        res.status(500).send(error.message);
+      }
+    }
+  },
+];
+
 exports.getAllTutors = (req, res) => Tutors.find({}, (err, posts) => {
   if (err) {
     res.status(500).send({

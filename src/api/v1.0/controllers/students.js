@@ -17,7 +17,7 @@ const createStudent = [
       if (err) {
         return res.status(500).send(err);
       }
-      const errors = validationResult(req.body);
+      const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(406).send({
           errors: errors.array(),
@@ -47,6 +47,48 @@ const createStudent = [
         } catch (err) { res.status(500).send({ error: err.message }); }
       }
     });
+  },
+];
+
+const studentLogin = [
+  body('email')
+    .isEmail()
+    .withMessage('Type in an actual email')
+    .normalizeEmail(),
+  check('password')
+    .isLength({ min: 4 })
+    .withMessage('must be at least 4 characters long'),
+  async (req, res) => {
+    const errors = await validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(406).send({
+        errors: errors.array(),
+      });
+    } else {
+      try {
+        const { email, password } = req.body;
+        const student = await Students.findByCredentials(email, password);
+        if (!student) {
+          return res
+            .status(401)
+            .send({ error: 'Login failed! Incorrect email' });
+        }
+        if (!student.password) {
+          return res
+            .status(401)
+            .send({ error: 'Login failed! Incorrect password' });
+        }
+        // if (!student.isVerified) {
+        //   return res
+        //     .status(401)
+        //     .send({ error: 'Your account has not been verified.' });
+        // }
+        const token = await student.generateAuthToken();
+        res.status(200).send({ student, token });
+      } catch (error) {
+        res.status(500).send(error.message);
+      }
+    }
   },
 ];
 
@@ -117,6 +159,7 @@ const deleteStudent = (req, res) => Students.findByIdAndRemove(req.params.id, (e
 
 module.exports = {
   createStudent,
+  studentLogin,
   getAllStudents,
   getStudent,
   updateStudent,
