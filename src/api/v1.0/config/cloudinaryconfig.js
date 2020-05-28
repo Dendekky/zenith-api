@@ -5,8 +5,8 @@ require('dotenv').config();
 
 cloudinary.config({
   cloud_name: 'dendekky',
-  api_key: '439755927867787',
-  api_secret: '8TnFlBfebKxIw_Hp8JAM5QDMPBU',
+  api_key: process.env.api_key,
+  api_secret: process.env.api_secret,
 });
 
 const uniqueFilename = new Date().toISOString();
