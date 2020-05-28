@@ -1,31 +1,67 @@
 import multer from 'multer';
 
 const storage = multer.diskStorage({
-    // destination: function(req, file,cb){
-    //     if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
-    //         cb(null, 'src/api/v1.0/config/uploads/')
-    //         // cb(null, './files/images/');
-    //     }else{
-    //         cb({message: 'this file is neither a video or image file'}, false)
-    //     }},
-    filename: function(req, file, cb){
-        cb(null, file.originalname);
-    }
+  filename(req, file, cb) {
+    cb(null, file.originalname);
+  },
 });
 
-const parseImage = multer({storage}).fields([
-    {
-    name: 'title'
-    }, 
-    {
-    name: 'category',
-    },
-    {
-    name: 'body',
-    },
-    {
-    name: 'postImage',
-    }
+exports.parseStudentImage = multer({ storage }).fields([
+  {
+    name: 'name',
+  },
+  {
+    name: 'age',
+  },
+  {
+    name: 'email',
+  },
+  {
+    name: 'password',
+  },
+  {
+    name: 'department',
+  },
+  {
+    name: 'targetExam',
+  },
+  {
+    name: 'phone',
+  },
+  {
+    name: 'address',
+  },
+  {
+    name: 'photo',
+  },
 ]);
 
-module.exports = parseImage;
+exports.parseTutorImage = multer({ storage }).fields([
+  {
+    name: 'name',
+  },
+  {
+    name: 'age',
+  },
+  {
+    name: 'email',
+  },
+  {
+    name: 'password',
+  },
+  {
+    name: 'department',
+  },
+  {
+    name: 'subjects',
+  },
+  {
+    name: 'phone',
+  },
+  {
+    name: 'address',
+  },
+  {
+    name: 'photo',
+  },
+]);
