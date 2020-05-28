@@ -1,9 +1,9 @@
 /* eslint-disable linebreak-style */
 import {
-  createTutor, getTutor, getAllTutors, updateTutor, deleteTutor
+  createTutor, getTutor, getAllTutors, updateTutor, deleteTutor,
 } from '../controllers/tutors';
 import {
-  createStudent, getStudent, getAllStudents, updateStudent, deleteStudent
+  createStudent, getStudent, getAllStudents, updateStudent, deleteStudent,
 } from '../controllers/students';
 import { login } from '../controllers/admin';
 import { checkAuth } from '../middlewares/auth';

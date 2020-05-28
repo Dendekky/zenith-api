@@ -1,6 +1,6 @@
 import { check, body, validationResult } from 'express-validator';
 import Tutors from '../models/tutors';
-import  { parseTutorImage } from '../config/multerconfig';
+import { parseTutorImage } from '../config/multerconfig';
 import { uploadImage } from '../config/cloudinaryconfig';
 
 exports.createTutor = [
@@ -10,9 +10,11 @@ exports.createTutor = [
 
   (req, res) => {
     parseTutorImage(req, res, async (err) => {
-      const { name, age, email, password, department, subjects, phone, address } = req.body;
+      const {
+        name, age, email, password, department, subjects, phone, address,
+      } = req.body;
       if (err) {
-        return res.status(500).send(err)
+        return res.status(500).send(err);
       }
       const errors = validationResult(req.body);
       if (!errors.isEmpty()) {
@@ -21,30 +23,31 @@ exports.createTutor = [
         });
       } else {
         try {
-      const file = req.files.photo[0].path;
-      const image = await uploadImage(file)
-        const photo = image.url;
-        const tutor = new Tutors({ name, age, email, password, department, subjects, phone, address, photo });
-        const registeredTutor = await Tutors.findOne({ email: email });
-        if (registeredTutor) {
-          return res.status(409).send({ error: 'Tutor with this email already exists' });
-        }
-        tutor.save((err) => {
-          if (err) {
-            return res.status(500).send({
-              error: 'Internal server error',
-            });
-          }
-          res.status(201).send({
-            success: 'Tutor saved',
+          const file = req.files.photo[0].path;
+          const image = await uploadImage(file);
+          const photo = image.url;
+          const tutor = new Tutors({
+            name, age, email, password, department, subjects, phone, address, photo,
           });
-        });
+          const registeredTutor = await Tutors.findOne({ email });
+          if (registeredTutor) {
+            return res.status(409).send({ error: 'Tutor with this email already exists' });
+          }
+          tutor.save((err) => {
+            if (err) {
+              return res.status(500).send({
+                error: 'Internal server error',
+              });
+            }
+            res.status(201).send({
+              success: 'Tutor saved',
+            });
+          });
+        } catch (err) { res.status(500).send({ error: err.message }); }
       }
-      catch(err ) {res.status(500).send({ error: err.message })};
-      }
-    })
-  }
-]
+    });
+  },
+];
 
 exports.getAllTutors = (req, res) => Tutors.find({}, (err, posts) => {
   if (err) {
@@ -60,7 +63,7 @@ exports.getAllTutors = (req, res) => Tutors.find({}, (err, posts) => {
 });
 
 exports.getTutor = (req, res) => Tutors.findOne({ _id: req.params.id })
-  .populate("comments")
+  .populate('comments')
   .then((post) => {
     if (!post) {
       return res.status(500).send({
@@ -69,7 +72,7 @@ exports.getTutor = (req, res) => Tutors.findOne({ _id: req.params.id })
     }
     return res.status(200).json(post);
   })
-  .catch(function(err) {
+  .catch((err) => {
     res.json(err);
   });
 
@@ -113,4 +116,3 @@ exports.deleteTutor = (req, res) => Tutors.findByIdAndRemove(req.params.id, (err
     message: 'post deleted',
   });
 });
-

@@ -1,6 +1,6 @@
 import { check, body, validationResult } from 'express-validator';
 import Students from '../models/students';
-import  { parseStudentImage } from '../config/multerconfig';
+import { parseStudentImage } from '../config/multerconfig';
 import { uploadImage } from '../config/cloudinaryconfig';
 
 
@@ -8,12 +8,14 @@ const createStudent = [
   check('name').isLength({ min: 3 }).withMessage('Please input a name'),
   body('phone').isLength({ min: 3 }).withMessage('Please input a phone number'),
   check('department').isLength({ min: 3 }).withMessage('Please input the department'),
-  
+
   (req, res) => {
     parseStudentImage(req, res, async (err) => {
-      const { name, age, email, password, department, targetExam, phone, address } = req.body;
+      const {
+        name, age, email, password, department, targetExam, phone, address,
+      } = req.body;
       if (err) {
-        return res.status(500).send(err)
+        return res.status(500).send(err);
       }
       const errors = validationResult(req.body);
       if (!errors.isEmpty()) {
@@ -22,30 +24,31 @@ const createStudent = [
         });
       } else {
         try {
-      const file = req.files.photo[0].path;
-      const image = await uploadImage(file)
-        const photo = image.url;
-        const student = new Students({ name, age, email, password, department, targetExam, phone, address, photo });
-        const registeredStudent = await Students.findOne({ email: email });
-        if (registeredStudent) {
-          return res.status(409).send({ error: 'Student with this email already exists' });
-        }
-        student.save((err) => {
-          if (err) {
-            return res.status(500).send({
-              error: 'Internal server error',
-            });
-          }
-          res.status(201).send({
-            success: 'saved to student',
+          const file = req.files.photo[0].path;
+          const image = await uploadImage(file);
+          const photo = image.url;
+          const student = new Students({
+            name, age, email, password, department, targetExam, phone, address, photo,
           });
-        });
+          const registeredStudent = await Students.findOne({ email });
+          if (registeredStudent) {
+            return res.status(409).send({ error: 'Student with this email already exists' });
+          }
+          student.save((err) => {
+            if (err) {
+              return res.status(500).send({
+                error: 'Internal server error',
+              });
+            }
+            res.status(201).send({
+              success: 'saved to student',
+            });
+          });
+        } catch (err) { res.status(500).send({ error: err.message }); }
       }
-      catch(err ) {res.status(500).send({ error: err.message })};
-      }
-    })
-  }
-]
+    });
+  },
+];
 
 const getAllStudents = (req, res) => Students.find({}, (err, students) => {
   if (err) {
@@ -117,5 +120,5 @@ module.exports = {
   getAllStudents,
   getStudent,
   updateStudent,
-  deleteStudent
+  deleteStudent,
 };
