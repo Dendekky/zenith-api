@@ -12,20 +12,6 @@ cloudinary.config({
 const uniqueFilename = new Date().toISOString();
 
 exports.uploadImage = (file) => {
-    // cloudinary.uploader.upload(
-    //     file,
-    //     // { public_id: `Assets/${uniqueFilename}`, tags: `blog` }, // directory and tags are optional
-    //     (data) => {
-    //       if (data) {
-    //         // console.log(data.url);
-    //         return res.status(201).json(data)
-    //       }
-    //     //   console.log(err.public_id);
-    //     //   fs.unlinkSync(file)
-  
-    //     //   res.status(201).json(image)
-    //     }
-    // )
     return new Promise(resolve => {
         cloudinary.uploader.upload(
             file, 

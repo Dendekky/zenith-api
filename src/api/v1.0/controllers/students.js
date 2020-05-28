@@ -1,133 +1,94 @@
 import { check, body, validationResult } from 'express-validator';
-import BlogDraft from '../models/blogdraft';
-import  parseImage from '../config/multerconfig';
+import Students from '../models/students';
+import  { parseStudentImage } from '../config/multerconfig';
 import { uploadImage } from '../config/cloudinaryconfig';
 
 
-const createStudent = (req, res) => {
-  // console.log(req.body);
-
-  parseImage(req, res, function(err) {
-    const { title, category, body } = req.body;
-
-    if (err) {
-      return res.status(500).send(err)
-    }
-    console.log(req.files)
-    const file = req.files.postImage[0].path;
-    console.log(file)
-
-    uploadImage(file)
-    .then((result) => {
-      console.log(result.url);
-
-      const postImage = result.url;
-      const draft = new BlogDraft({
-        title,
-        category,
-        body,
-        postImage,
-      });
-      // console.log(draft);
-      draft.save((err) => {
-        if (err) {
-          return res.status(500).send({
-            message: 'Internal server error',
-          });
-        }
-        res.status(201).send({
-          success: 'saved to draft',
+const createStudent = [
+  check('name').isLength({ min: 3 }).withMessage('Please input a name'),
+  body('phone').isLength({ min: 3 }).withMessage('Please input a phone number'),
+  check('department').isLength({ min: 3 }).withMessage('Please input the department'),
+  
+  (req, res) => {
+    parseStudentImage(req, res, async (err) => {
+      const { name, age, email, password, department, targetExam, phone, address } = req.body;
+      if (err) {
+        return res.status(500).send(err)
+      }
+      const errors = validationResult(req.body);
+      if (!errors.isEmpty()) {
+        res.status(406).send({
+          errors: errors.array(),
         });
-      });
+      } else {
+        try {
+      const file = req.files.photo[0].path;
+      const image = await uploadImage(file)
+        const photo = image.url;
+        const student = new Students({ name, age, email, password, department, targetExam, phone, address, photo });
+        const registeredStudent = await Students.findOne({ email: email });
+        if (registeredStudent) {
+          return res.status(409).send({ error: 'Student with this email already exists' });
+        }
+        student.save((err) => {
+          if (err) {
+            return res.status(500).send({
+              error: 'Internal server error',
+            });
+          }
+          res.status(201).send({
+            success: 'saved to student',
+          });
+        });
+      }
+      catch(err ) {res.status(500).send({ error: err.message })};
+      }
     })
-    .catch(err => console.error(err));
-  })
-};
+  }
+]
 
-// const createStudent = [
-//   check('title').isLength({ min: 3 }).withMessage('Please input a title'),
-//   body('category').isLength({ min: 3 }).withMessage('input category'),
-//   check('body').isLength({ min: 3 }).withMessage('Please input the blog'),
-//   check('metadata').isLength({ min: 3 }).withMessage('Please input the summary'),
-
-//   (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       res.status(406).send({
-//         errors: errors.array(),
-//         status: 406,
-//       });
-//     } else {
-//       const { title, category, body, metadata, postImage } = req.body;
-
-//       const draft = new BlogDraft({
-//         title,
-//         category,
-//         body,
-//         metadata,
-//         postImage,
-//       });
-//       draft.save((err) => {
-//         if (err) {
-//           return res.status(500).send({
-//             status: 500,
-//             message: 'Internal server error',
-//           });
-//         }
-//         res.status(201).send({
-//           status: 201,
-//           success: 'saved to draft',
-//         });
-//       });
-//     }
-//   },
-// ];
-
-const getAllStudents = (req, res) => BlogDraft.find({}, (err, drafts) => {
+const getAllStudents = (req, res) => Students.find({}, (err, students) => {
   if (err) {
     res.status(500).send({
-      status: 500,
-      message: 'Internal server error',
+      error: 'Internal server error',
     });
   }
   res.status(200).send({
-    status: 200,
-    drafts,
+    students,
   });
 });
 
 
-const getStudent = (req, res) => BlogDraft.findById(req.params.id, (err, draft) => {
+const getStudent = (req, res) => Students.findById(req.params.id, (err, student) => {
   if (err) {
     res.status(500).send({
-      message: 'Internal server error',
+      error: 'Internal server error',
     });
   }
   res.status(200).send({
-    draft,
+    student,
   });
 });
 
 
 const updateStudent = [
-  check('title').isLength({ min: 3 }).withMessage('Please input a title'),
-  body('category').isLength({ min: 3 }).withMessage('input category'),
-  check('body').isLength({ min: 3 }).withMessage('Please input the blog'),
+  check('name').isLength({ min: 3 }).withMessage('Please input a name'),
+  body('phone').isLength({ min: 3 }).withMessage('Please input a phone number'),
+  check('department').isLength({ min: 3 }).withMessage('Please input the department'),
 
   (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(406).send({
         errors: errors.array(),
-        status: 406,
       });
     } else {
-      BlogDraft.findByIdAndUpdate(
+      Students.findByIdAndUpdate(
         req.params.id, req.body,
-        { upsert: true }, (err, draft) => {
+        { upsert: true }, (err, student) => {
           if (err) {
             res.status(500).send({
-              message: 'Internal server error',
+              error: 'Internal server error',
             });
           }
           res.status(201).send({
@@ -139,14 +100,14 @@ const updateStudent = [
   },
 ];
 
-const deleteStudent = (req, res) => BlogDraft.findByIdAndRemove(req.params.id, (err, del) => {
+const deleteStudent = (req, res) => Students.findByIdAndRemove(req.params.id, (err, del) => {
   if (err) {
     res.status(500).send({
-      message: 'Internal server error',
+      error: 'Internal server error',
     });
   }
   res.status(200).send({
-    message: 'post deleted',
+    message: 'student deleted',
   });
 });
 

@@ -1,48 +1,52 @@
 import { check, body, validationResult } from 'express-validator';
-import BlogPost from '../models/blogpost';
-import PostComment from '../models/comments';
-import  parseImage from '../config/multerconfig';
+import Tutors from '../models/tutors';
+import  { parseTutorImage } from '../config/multerconfig';
 import { uploadImage } from '../config/cloudinaryconfig';
 
-exports.createTutor = (req, res) => {
+exports.createTutor = [
+  check('name').isLength({ min: 3 }).withMessage('Please input a name'),
+  body('phone').isLength({ min: 3 }).withMessage('Please input a phone number'),
+  check('department').isLength({ min: 3 }).withMessage('Please input the department'),
 
-  parseImage(req, res, function(err) {
-    const { title, category, body } = req.body;
-
-    if (err) {
-      return res.status(500).send(err)
-    }
-
-    const file = req.files.postImage[0].path;
-
-    uploadImage(file)
-    .then((result) => {
-      console.log(result.url);
-
-      const postImage = result.url;
-      const post = new BlogPost({
-        title,
-        category,
-        body,
-        postImage,
-      });
-      console.log(post);
-      post.save((err) => {
-        if (err) {
-          return res.status(500).send({
-            message: 'Internal server error',
-          });
-        }
-        res.status(201).send({
-          success: 'published post to blog',
+  (req, res) => {
+    parseTutorImage(req, res, async (err) => {
+      const { name, age, email, password, department, subjects, phone, address } = req.body;
+      if (err) {
+        return res.status(500).send(err)
+      }
+      const errors = validationResult(req.body);
+      if (!errors.isEmpty()) {
+        res.status(406).send({
+          errors: errors.array(),
         });
-      });
+      } else {
+        try {
+      const file = req.files.photo[0].path;
+      const image = await uploadImage(file)
+        const photo = image.url;
+        const tutor = new Tutors({ name, age, email, password, department, subjects, phone, address, photo });
+        const registeredTutor = await Tutors.findOne({ email: email });
+        if (registeredTutor) {
+          return res.status(409).send({ error: 'Tutor with this email already exists' });
+        }
+        tutor.save((err) => {
+          if (err) {
+            return res.status(500).send({
+              error: 'Internal server error',
+            });
+          }
+          res.status(201).send({
+            success: 'Tutor saved',
+          });
+        });
+      }
+      catch(err ) {res.status(500).send({ error: err.message })};
+      }
     })
-    .catch(err => console.error(err));
-  })
-};
+  }
+]
 
-exports.getAllTutors = (req, res) => BlogPost.find({}, (err, posts) => {
+exports.getAllTutors = (req, res) => Tutors.find({}, (err, posts) => {
   if (err) {
     res.status(500).send({
       status: 500,
@@ -55,7 +59,7 @@ exports.getAllTutors = (req, res) => BlogPost.find({}, (err, posts) => {
   });
 });
 
-exports.getTutor = (req, res) => BlogPost.findOne({ _id: req.params.id })
+exports.getTutor = (req, res) => Tutors.findOne({ _id: req.params.id })
   .populate("comments")
   .then((post) => {
     if (!post) {
@@ -82,7 +86,7 @@ exports.updateTutor = [
         status: 406,
       });
     } else {
-      BlogPost.findByIdAndUpdate(
+      Tutors.findByIdAndUpdate(
         req.params.id, req.body,
         { upsert: true }, (err, post) => {
           if (err) {
@@ -99,7 +103,7 @@ exports.updateTutor = [
   },
 ];
 
-exports.deleteTutor = (req, res) => BlogPost.findByIdAndRemove(req.params.id, (err, del) => {
+exports.deleteTutor = (req, res) => Tutors.findByIdAndRemove(req.params.id, (err, del) => {
   if (err) {
     res.status(500).send({
       message: 'Internal server error',
